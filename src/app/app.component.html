@@ -1,0 +1,26 @@
+<mat-toolbar color="primary" style="z-index: 2000;">
+  <div class="alignCenter">
+    <mat-icon class="mainLogo">coronavirus</mat-icon>
+    <span>Covid19 Tracker <span style="font-size: small;">for India</span></span>
+  </div>
+  <button mat-icon-button color="primary" aria-label="refresh" style="color: white;position: absolute;right: 8px;" (click)="refresh()">
+    <span class="material-icons">
+      refresh
+      </span>
+  </button>
+</mat-toolbar>
+<mat-spinner *ngIf="viewProgessBar" style="margin: auto; bottom: -170px;"></mat-spinner>
+<mat-tab-group headerPosition="below" class="footer" mat-align-tabs="center" animationDuration="500ms" color="accent"
+  *ngIf="!viewProgessBar" (selectedTabChange)="check($event)" [selectedIndex]="selectedIndex"
+  (swipeleft)="swipe($event, 1)" (swiperight)="swipe($event, -1)">
+  <mat-tab label="India">
+    <app-status [type]="type" [uid]="'country'" [dispalyChart]='dispalyChart' (changeToggle)='changeToggle($event)'></app-status>
+  </mat-tab>
+  <mat-tab label='{{stateName.length > 10 ? stateName.substr(0, 10) + ".." : stateName}}'>
+    <app-status [type]="type" [uid]="'state'" [stateName]='stateName'
+     [stateCode]='stateCode' [dispalyChart]='dispalyChart' (changeToggle)='changeToggle($event)'></app-status>
+  </mat-tab>
+  <mat-tab label='{{district.length > 10 ? district.substr(0, 10) + ".." : district}}'>
+    <app-status [type]="type" [uid]="'district'" [district]='district' [dispalyChart]='false'></app-status>
+  </mat-tab>
+</mat-tab-group>

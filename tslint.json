@@ -1,0 +1,9 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "experimentalDecorators": false
+  },
+  "rulesDirectory": [
+    "codelyzer"
+  ]
+}

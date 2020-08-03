@@ -1,0 +1,36 @@
+<div>
+    <p>Please select state and district</p>
+    <form class="selection-form" (ngSubmit)="submit($event)">
+        <mat-form-field class="selection-full-width">
+          <input type="text"
+                 placeholder="Select state"
+                 aria-label="Number"
+                 matInput
+                 [formControl]="stateControl"
+                 [matAutocomplete]="auto" #state>
+          <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let option of filteredOptions | async" [value]="option.name">
+              {{option.name}}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <br>
+        <mat-form-field class="selection-full-width">
+            <input type="text"
+                   placeholder="Select district"
+                   aria-label="Number"
+                   matInput
+                   [formControl]="districtControl"
+                   [matAutocomplete]="auto2">
+            <mat-autocomplete #auto2="matAutocomplete">
+              <mat-option *ngFor="let option of filteredDistrictOptions | async" [value]="option">
+                {{option}}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        <button mat-raised-button color="primary">Submit</button>
+    </form>
+      
+</div>
+
+  

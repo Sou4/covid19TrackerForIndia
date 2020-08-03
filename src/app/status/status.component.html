@@ -1,0 +1,239 @@
+<div class="statusWrapper">
+  <button mat-raised-button color="primary" (click)="openBottomSheet()" *ngIf="!data" class="selectChoice">Please select
+    state and district</button>
+  <p style="margin-bottom: 0; margin-top: 0;" *ngIf="data">
+    <mat-chip-list class="mat-chip-list-stacked" aria-label="Change state and district here">
+      <mat-chip color="accent" selected (click)="openBottomSheet()" style="font-size: smaller; min-height: 22px;">
+        <span class="material-icons" style="font-size: medium;
+      margin-right: 5px;
+      margin-left: 15px;">
+          location_on
+        </span>
+        Click here to change state and district</mat-chip>
+    </mat-chip-list>
+  </p>
+  <div style="margin: 5%; margin-bottom: 0;" *ngIf="data">
+    <div style="float: right; text-align: right;">
+      <p style="margin: 0; font-size: small; margin-bottom: 5px; font-weight: 300;">Population <span
+          style="font-weight: 500;">{{numberFormat.format(data.population)}}</span></p>
+      <p style="margin: 0; font-size: 10px; font-weight: 400;" *ngIf="data?.latest?.tested && data.latest.tested > 0">
+        +{{numberFormat.format(data.latest.tested)}}</p>
+      <p style="margin: 0; font-size: small; margin-bottom: 8px; font-weight: 300;">Tested <span
+          style="font-weight: 500;">{{numberFormat.format(data.total.tested)}}</span></p>
+      <p style="margin: 0; font-size: x-small; font-weight: 300;">Last updated on {{data.lastUpdated | date:'medium'}}
+      </p>
+    </div>
+    <div class="clearfixRight"></div>
+    <div
+      style="font-size: 24px; font-weight: inherit; position: relative; top: -60px; width: 150px; word-break: break-word;">
+      {{data.name}}</div>
+  </div>
+  <div class="countWrap" *ngIf="data">
+    <mat-card class="countCard"
+      style="color: #ff073a; text-align: center; min-height: 65px; background-color: #fff3f5;">
+      <label style="font-weight: 500;">Positive Cases</label>
+      <div style="margin-top: 10px;">
+        <p style="margin: 0; font-size: smaller; font-weight: 400;" *ngIf="data?.latest?.positveCases else default">
+          +{{numberFormat.format(data.latest.positveCases)}}</p>
+        <ng-template #default><br></ng-template>
+        <p style="margin: 0; font-weight: 500;"> {{numberFormat.format(data.total.positveCases)}}</p>
+      </div>
+    </mat-card>
+    <mat-card class="countCard"
+      style="color: #28a745; text-align: center; min-height: 65px; background-color: #f0fff3;">
+      <label style="font-weight: 500;">Recovered</label>
+      <div style="margin-top: 10px;">
+        <p style="margin: 0; font-size: smaller; font-weight: 400;" *ngIf="data?.latest?.recovered else default">
+          +{{numberFormat.format(data.latest.recovered)}}</p>
+        <ng-template #default><br></ng-template>
+        <p style="margin: 0; font-weight: 500;"> {{numberFormat.format(data.total.recovered)}}</p>
+      </div>
+    </mat-card>
+    <mat-card class="countCard"
+      style="color: #007bff; text-align: center; min-height: 65px; background-color: #e2f0ff;">
+      <label style="font-weight: 500;">Active Cases</label>
+      <div style="margin-top: 10px;">
+        <br>
+        <p style="margin: 0; font-weight: 500;"> {{numberFormat.format(data.total.activeCases)}}</p>
+      </div>
+    </mat-card>
+    <mat-card class="countCard"
+      style="color: #6c757d; text-align: center; min-height: 65px; background-color: #f2f2f2;">
+      <label style="font-weight: 500;">Deaths</label>
+      <div style="margin-top: 10px;">
+        <p style="margin: 0; font-size: smaller; font-weight: 400;" *ngIf="data?.latest?.deaths else default">
+          +{{numberFormat.format(data.latest.deaths)}}</p>
+        <ng-template #default><br></ng-template>
+        <p style="margin: 0; font-weight: 500;"> {{numberFormat.format(data.total.deaths)}}</p>
+      </div>
+    </mat-card>
+  </div>
+
+  <div style="margin-top: -10px;">
+    <canvas id="chart" width="0" height="0" aria-label="Chart not supported" class="chartTabView"></canvas>
+  </div>
+  <p *ngIf="!showChart" style="text-align: center; margin-bottom: 15px; margin-top: 0;">
+    Loading chart...
+  </p>
+  <div *ngIf="showChart" style="margin: 15px;" class="chartOptions">
+    <mat-button-toggle-group appearance="legacy" name="fontStyle" aria-label="Font Style" value="30"
+      style="font-size: x-small; font-weight: 500;" (change)="rangeChanged($event)">
+      <mat-button-toggle value="all">Beginning</mat-button-toggle>
+      <mat-button-toggle value="30">1 Month </mat-button-toggle>
+      <mat-button-toggle value="7">1 Week</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+  <div class="stateTable" *ngIf="dataSource.length > 0">
+    <table mat-table class="mat-elevation-z8" [dataSource]="dataSource">
+
+      <!-- State Column -->
+      <ng-container matColumnDef="name" sticky>
+        <th mat-header-cell *matHeaderCellDef style="width:20% !important">
+          <span *ngIf="type === 'country' else default">State/ UT</span>
+          <ng-template #default>Districts</ng-template>
+        </th>
+        <td mat-cell *matCellDef="let element" style="width:20% !important">
+          <p style="margin: 0; color: #fd9008fa; position: absolute; top: 5px; right: 14px;" (click)="toggle(element)">
+            <span class="material-icons" style="font-size: large;">
+              open_in_new
+            </span>
+          </p>
+          {{element.name}}
+        </td>
+      </ng-container>
+
+      <!-- Positive Cases Column -->
+      <ng-container matColumnDef="positiveCases">
+        <th mat-header-cell *matHeaderCellDef>
+          <span>Positive</span>
+          <br>
+          <span>Cases</span>
+        </th>
+        <td mat-cell *matCellDef="let element">
+          <p style="margin: 0; font-size: x-small; color: #ff073a;" *ngIf="element?.positiveCases?.latest else default">
+            <span class="material-icons" style="font-size: x-small; margin-right: -2px;">
+              arrow_upward
+            </span>
+            {{numberFormat.format(element.positiveCases.latest) }}
+          </p>
+          <ng-template #default><br></ng-template>
+          <p style="margin: 0;">{{numberFormat.format(element.positiveCases.total) }}</p>
+        </td>
+      </ng-container>
+
+      <!-- Recovered Column -->
+      <ng-container matColumnDef="recovered">
+        <th mat-header-cell *matHeaderCellDef> Recovered </th>
+        <td mat-cell *matCellDef="let element">
+          <p style="margin: 0; font-size: x-small; color: #28a745;" *ngIf="element?.recovered?.latest else default">
+            <span class="material-icons" style="font-size: x-small; margin-right: -2px;">
+              arrow_upward
+            </span>
+            {{numberFormat.format(element.recovered.latest) }}
+          </p>
+          <ng-template #default><br></ng-template>
+          {{numberFormat.format(element.recovered.total) }}
+        </td>
+      </ng-container>
+
+      <!-- Active Cases Column -->
+      <ng-container matColumnDef="activeCases">
+        <th mat-header-cell *matHeaderCellDef>
+          <span>Active</span>
+          <br>
+          <span>Cases</span>
+        </th>
+        <td mat-cell *matCellDef="let element"> <br> {{numberFormat.format(element.activeCases.total) }} </td>
+      </ng-container>
+
+      <!-- Recovered Column -->
+      <ng-container matColumnDef="deaths">
+        <th mat-header-cell *matHeaderCellDef> Deaths </th>
+        <td mat-cell *matCellDef="let element">
+          <p style="margin: 0; font-size: x-small; color: #6c757d;" *ngIf="element?.deaths?.latest else default">
+            <span class="material-icons" style="font-size: x-small; margin-right: -2px;">
+              arrow_upward
+            </span>
+            {{numberFormat.format(element.deaths.latest) }}
+          </p>
+          <ng-template #default><br></ng-template>
+          {{numberFormat.format(element.deaths.total) }}
+        </td>
+      </ng-container>
+
+       <!-- Tested Column -->
+       <ng-container matColumnDef="tested">
+        <th mat-header-cell *matHeaderCellDef> Tested </th>
+        <td mat-cell *matCellDef="let element">
+          <p style="margin: 0; font-size: x-small; color: #6c757d;" *ngIf="element?.tested?.latest else default">
+            <span class="material-icons" style="font-size: x-small; margin-right: -2px;">
+              arrow_upward
+            </span>
+            {{numberFormat.format(element.tested.latest) }}
+          </p>
+          <ng-template #default><br></ng-template>
+          {{numberFormat.format(element.tested.total) }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+  <br>
+  <div class="infoWarp" *ngIf="data">
+    <mat-card class="countCard"
+      style="color: #ff073a; text-align: center; min-height: 65px; background-color: #fff3f5; border: 0.5px dotted black; box-shadow: none;">
+      <span class="material-icons" style="position: absolute; top: 2px; right: 2px;font-size: 20px; font-weight: 100;">
+        info
+      </span>
+      <p style="text-align: left; margin: 0;">Positivity Rate</p>
+      <div style="width: 135px;" class="infoText">
+        <p style="margin: 0; font-size: x-large; font-weight: 500; text-align: left;margin-bottom: 5px;;">
+          {{data.positivityRate}}%</p>
+        <p style="margin: 0; font-size: smaller; text-align: left;">For every 100 tests, {{data.positivityRate}} have
+          tested positive for the virus.</p>
+      </div>
+    </mat-card>
+    <mat-card class="countCard"
+      style="color: #28a745; text-align: center; min-height: 65px; background-color: #f0fff3;border: 0.5px dotted black; box-shadow: none;">
+      <span class="material-icons" style="position: absolute; top: 2px; right: 2px;font-size: 20px; font-weight: 100;">
+        info
+      </span>
+      <p style="text-align: left; margin: 0;">Recovery Rate</p>
+      <div style="width: 135px;" class="infoText">
+        <p style="margin: 0; font-size: x-large; font-weight: 500; text-align: left;margin-bottom: 5px;;">
+          {{data.recoveryRate}}%</p>
+        <p style="margin: 0; font-size: smaller; text-align: left;">For every 100 positive cases, {{data.recoveryRate}}
+          have recovered from the virus.</p>
+      </div>
+    </mat-card>
+    <mat-card class="countCard"
+      style="color: #007bff; text-align: center; min-height: 65px; background-color: #e2f0ff;border: 0.5px dotted black; box-shadow: none;">
+      <span class="material-icons" style="position: absolute; top: 2px; right: 2px;font-size: 20px; font-weight: 100;">
+        info
+      </span>
+      <p style="text-align: left; margin: 0;">Active</p>
+      <div style="width: 135px;" class="infoText">
+        <p style="margin: 0; font-size: x-large; font-weight: 500; text-align: left;margin-bottom: 5px;;">
+          {{data.activeRate}}%</p>
+        <p style="margin: 0; font-size: smaller; text-align: left;">For every 100 positive cases, {{data.activeRate}}
+          are currently active.</p>
+      </div>
+    </mat-card>
+    <mat-card class="countCard"
+      style="color: #6c757d; text-align: center; min-height: 65px; background-color: #f2f2f2;border: 0.5px dotted black; box-shadow: none;">
+      <span class="material-icons" style="position: absolute; top: 2px; right: 2px;font-size: 20px; font-weight: 100;">
+        info
+      </span>
+      <p style="text-align: left; margin: 0;">Fatality Rate</p>
+      <div style="width: 135px;" class="infoText">
+        <p style="margin: 0; font-size: x-large; font-weight: 500; text-align: left;margin-bottom: 5px;;">
+          {{data.fatalityRate}}%</p>
+        <p style="margin: 0; font-size: smaller; text-align: left;">For every 100 positive cases, {{data.fatalityRate}}
+          have unfortunately passed away.</p>
+      </div>
+    </mat-card>
+  </div>
+  <div style="margin-bottom: 120px;"></div>
+</div>
